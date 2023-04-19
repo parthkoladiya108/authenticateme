@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:xml/xml.dart' as xml;
 
 import 'fade_animation.dart';
@@ -160,6 +161,17 @@ class _HomePageState extends State<HomePage> {
                                     backgroundColor:
                                         MaterialStateProperty.all(Colors.teal)),
                                 onPressed: () async {
+                                  final client = OdooClient(
+                                      "https://security-v15.odoo.com");
+                                  final data = await client.authenticate(
+                                      "planetodooofficial-security-v15-production-7947598",
+                                      'admin',
+                                      "admin");
+                                  client.callKw({
+                                    'model': 'res.users',
+                                    'method': 'search_read',
+                                  });
+                                  print(data);
                                   if (_formKey.currentState!.validate()) {
                                     await checkMethod(
                                         userNameController.text,

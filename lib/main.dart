@@ -7,6 +7,11 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+
+  // client.connect().then((version) {
+  // print("Connected $version");
+  // });
+
   const MyApp({super.key});
 
   // This widget is the root of your application.
@@ -67,7 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headlineMedium,
             ),
           ],
         ),
