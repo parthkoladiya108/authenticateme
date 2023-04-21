@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'auth_controller.dart';
@@ -61,13 +62,37 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                            left: 16.0, top: 16, bottom: 4),
-                                        child: Text(
-                                            'Your Device ID :- ${authController.ipaddress}',
-                                            style: const TextStyle(
-                                              color: Colors.black,
+                                            left: 16.0,
+                                            top: 16,
+                                            bottom: 4,
+                                            right: 16),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                'Your Device ID :- ${authController.ipaddress}',
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                ),
+                                              ).paddingOnly(top: 0),
                                             ),
-                                            textAlign: TextAlign.start),
+                                            InkWell(
+                                              onTap: () async {
+                                                await Clipboard.setData(
+                                                    ClipboardData(
+                                                        text: authController
+                                                            .ipaddress));
+                                                // copied successfully
+                                              },
+                                              child: const Icon(
+                                                Icons.copy,
+                                                size: 23,
+                                              ),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                       const Padding(
                                         padding: EdgeInsets.only(

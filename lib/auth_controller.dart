@@ -1,9 +1,8 @@
-import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
+import 'package:platform_device_id/platform_device_id.dart';
 
 class AuthController extends GetxController {
   bool obscureText = true;
@@ -16,23 +15,15 @@ class AuthController extends GetxController {
   TextEditingController passwordController = TextEditingController();
 
   Future<String?> getipAddress() async {
-    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    if (Platform.isAndroid) {
-      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      ipaddress = androidInfo.id;
-      return androidInfo.id;
-    } else if (Platform.isIOS) {
-      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      ipaddress = iosInfo.identifierForVendor!;
-      return iosInfo.identifierForVendor;
-    } else if (Platform.isWindows) {
-      final WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
-      ipaddress = windowsInfo.deviceId;
-      return windowsInfo.deviceId;
-    } else {
-      throw UnsupportedError('This platform is not supported.');
+    try {
+      ipaddress = (await PlatformDeviceId.getDeviceId) ?? '';
+      update();
+      return ipaddress;
+    } on PlatformException {
+      ipaddress = 'Failed to get deviceId.';
+      update();
+      return ipaddress;
     }
-    update();
   }
 
   checkMethod(
@@ -46,6 +37,67 @@ class AuthController extends GetxController {
       authenticateUser(userUsername, userPassword, ipAddress);
     } else {
       print('error line 02');
+      isLoading = false;
+      update();
+    }
+  }
+
+  updateSettings(
+      String userUsername, String userPassword, OdooClient client) async {
+    try {
+      // final client = OdooClient("https://security-v15.odoo.com");
+
+      final data = await client.authenticate(
+          "planetodooofficial-security-v15-production-7947598",
+          userUsername,
+          userPassword);
+
+      final data2 = await client.callKw({
+        'model': 'res.users',
+        'method': 'write',
+        'args': [
+          [data.userId],
+          {
+            'x_studio_authenticated_via_security_app': false,
+            'x_studio_last_authenticated_datetime': DateTime.now().toString(),
+            'x_studio_last_updated_ip': ipaddress.trim()
+          }
+        ],
+        'kwargs': {
+          'context': {'bin_size': true},
+        },
+      });
+
+      if (data2) {
+        isPassed = true;
+        isLoading = false;
+        update();
+        Get.snackbar(
+          "Successful",
+          "Device authenticated successfully.",
+          icon: const Icon(Icons.done, color: Colors.green),
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        isPassed = false;
+        update();
+      } else {
+        Get.snackbar(
+          "Does not match",
+          "Your device does not match any ip address.",
+          icon: Icon(Icons.error, color: Colors.red),
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        isLoading = false;
+        update();
+      }
+    } catch (e) {
+      Get.snackbar(
+        "${e.runtimeType}",
+        "Failed to authenticate device please check your credentials.",
+        icon: const Icon(Icons.error, color: Colors.red),
+        snackPosition: SnackPosition.BOTTOM,
+      );
       isLoading = false;
       update();
     }
@@ -70,33 +122,31 @@ class AuthController extends GetxController {
           'domain': [
             ['login', '=', userUsername]
           ],
-          'fields': ['name', 'x_studio_mac_addresses'],
         },
       });
       data2[0]['x_studio_mac_addresses'];
       List<String> xStudioMacAddress =
           data2[0]['x_studio_mac_addresses'].toString().split(',');
 
-      if (xStudioMacAddress.contains(deviceMacAddress)) {
+      if (xStudioMacAddress.contains(deviceMacAddress.trim())) {
         isPassed = true;
         isLoading = false;
         update();
 
-        Get.snackbar(
-          "Successful",
-          "Device authenticated successfully.",
-          icon: Icon(Icons.done, color: Colors.red),
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        Future.delayed(const Duration(seconds: 2), () {
-          isPassed = false;
-          update();
-        });
+        // Get.snackbar(
+        //   "Successful",
+        //   "Device authenticated successfully.",
+        //   icon: const Icon(Icons.done, color: Colors.red),
+        //   snackPosition: SnackPosition.BOTTOM,
+        // );
+        await updateSettings(userUsername, userPassword, client);
+        // isPassed = false;
+        // update();
       } else {
         Get.snackbar(
           "Does not match",
           "Your device does not match any ip address.",
-          icon: Icon(Icons.error, color: Colors.red),
+          icon: const Icon(Icons.error, color: Colors.red),
           snackPosition: SnackPosition.BOTTOM,
         );
         isLoading = false;
@@ -104,14 +154,14 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       // print("---------------------------------------------");
-      // e.printError();
+      e.printError();
       // print("---------------------------------------------");
       // var data = e;
 
       Get.snackbar(
         "${e.runtimeType}",
-        "Failed to authenticate device please check your credentials.",
-        icon: Icon(Icons.error, color: Colors.red),
+        "Failed to authenticate device please check your credentials.2",
+        icon: const Icon(Icons.error, color: Colors.red),
         snackPosition: SnackPosition.BOTTOM,
       );
       isLoading = false;

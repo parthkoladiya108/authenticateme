@@ -38,8 +38,11 @@ dependencies:
   http: ^0.13.5
   odoo_rpc: ^0.5.1
   xml: ^6.2.2
-  device_info_plus: ^8.2.0
+  device_info_plus: ^3.2.4
+  platform_device_id: ^1.0.1
+  shared_preferences: ^2.1.0
   get: ^4.6.5
+  msix: ^3.11.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
