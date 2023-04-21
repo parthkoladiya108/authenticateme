@@ -22,6 +22,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
         backgroundColor: Colors.white,
         body: GetBuilder<AuthController>(
+            initState: (state) => Future.delayed(Duration.zero, () {
+                  authenticationController.getipAddress();
+                }),
             builder: (authController) => SingleChildScrollView(
                   child: Stack(
                     children: [
@@ -56,6 +59,16 @@ class _HomePageState extends State<HomePage> {
                                         CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16.0, top: 16, bottom: 4),
+                                        child: Text(
+                                            'Your Device ID :- ${authController.ipaddress}',
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            textAlign: TextAlign.start),
+                                      ),
                                       const Padding(
                                         padding: EdgeInsets.only(
                                             left: 16.0, top: 16, bottom: 4),
@@ -148,6 +161,9 @@ class _HomePageState extends State<HomePage> {
                                           ),
                                         ],
                                       ),
+                                      const SizedBox(
+                                        height: 10,
+                                      )
                                     ],
                                   ),
                                 ),

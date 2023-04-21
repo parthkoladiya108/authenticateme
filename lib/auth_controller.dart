@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
@@ -8,26 +9,30 @@ class AuthController extends GetxController {
   bool obscureText = true;
   bool isLoading = false;
   bool isPassed = false;
-
+  String ipaddress = "";
   final formKey = GlobalKey<FormState>();
   TextEditingController urlController = TextEditingController();
   TextEditingController userNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   Future<String?> getipAddress() async {
-    for (var interface in await NetworkInterface.list()) {
-      for (var address in interface.addresses) {
-        // Check if the address is an IPv4 address and not a loopback address
-        if (address.type == InternetAddressType.IPv4 && !address.isLoopback) {
-          // return "19292.123.123.123";
-          return address.address;
-        } else {
-          print('error line 01');
-          isLoading = false;
-          update();
-        }
-      }
+    final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      ipaddress = androidInfo.id;
+      return androidInfo.id;
+    } else if (Platform.isIOS) {
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      ipaddress = iosInfo.identifierForVendor!;
+      return iosInfo.identifierForVendor;
+    } else if (Platform.isWindows) {
+      final WindowsDeviceInfo windowsInfo = await deviceInfo.windowsInfo;
+      ipaddress = windowsInfo.deviceId;
+      return windowsInfo.deviceId;
+    } else {
+      throw UnsupportedError('This platform is not supported.');
     }
+    update();
   }
 
   checkMethod(
@@ -80,7 +85,7 @@ class AuthController extends GetxController {
         Get.snackbar(
           "Successful",
           "Device authenticated successfully.",
-          icon: Icon(Icons.error, color: Colors.red),
+          icon: Icon(Icons.done, color: Colors.red),
           snackPosition: SnackPosition.BOTTOM,
         );
         Future.delayed(const Duration(seconds: 2), () {
