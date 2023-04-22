@@ -43,22 +43,21 @@ class AuthController extends GetxController {
   }
 
   updateSettings(
-      String userUsername, String userPassword, OdooClient client) async {
+      String userUsername, String userPassword, OdooClient client2) async {
     try {
-      // final client = OdooClient("https://security-v15.odoo.com");
-
-      final data = await client.authenticate(
+      final client = OdooClient("https://security-v15.odoo.com");
+      final user = await client.authenticate(
           "planetodooofficial-security-v15-production-7947598",
           userUsername,
           userPassword);
 
-      final data2 = await client.callKw({
+      final data2 = await client2.callKw({
         'model': 'res.users',
         'method': 'write',
         'args': [
-          [data.userId],
+          [user.userId],
           {
-            'x_studio_authenticated_via_security_app': false,
+            'x_studio_authenticated_via_security_app': true,
             'x_studio_last_authenticated_datetime': DateTime.now().toString(),
             'x_studio_last_updated_ip': ipaddress.trim()
           }
@@ -71,6 +70,11 @@ class AuthController extends GetxController {
       if (data2) {
         isPassed = true;
         isLoading = false;
+        Future.delayed(const Duration(seconds: 1), () {
+          isPassed = false;
+          update();
+        });
+
         update();
         Get.snackbar(
           "Successful",
@@ -79,19 +83,20 @@ class AuthController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
 
-        isPassed = false;
         update();
       } else {
         Get.snackbar(
           "Does not match",
           "Your device does not match any ip address.",
-          icon: Icon(Icons.error, color: Colors.red),
+          icon: const Icon(Icons.error, color: Colors.red),
           snackPosition: SnackPosition.BOTTOM,
         );
         isLoading = false;
         update();
       }
     } catch (e) {
+      isPassed = false;
+
       Get.snackbar(
         "${e.runtimeType}",
         "Failed to authenticate device please check your credentials.",
@@ -110,8 +115,8 @@ class AuthController extends GetxController {
 
       final data = await client.authenticate(
           "planetodooofficial-security-v15-production-7947598",
-          userUsername,
-          userPassword);
+          'admin',
+          'admin');
 
       final data2 = await client.callKw({
         'model': 'res.users',
@@ -129,16 +134,9 @@ class AuthController extends GetxController {
           data2[0]['x_studio_mac_addresses'].toString().split(',');
 
       if (xStudioMacAddress.contains(deviceMacAddress.trim())) {
-        isPassed = true;
         isLoading = false;
+        // client.close();
         update();
-
-        // Get.snackbar(
-        //   "Successful",
-        //   "Device authenticated successfully.",
-        //   icon: const Icon(Icons.done, color: Colors.red),
-        //   snackPosition: SnackPosition.BOTTOM,
-        // );
         await updateSettings(userUsername, userPassword, client);
         // isPassed = false;
         // update();
@@ -153,14 +151,11 @@ class AuthController extends GetxController {
         update();
       }
     } catch (e) {
-      // print("---------------------------------------------");
-      e.printError();
-      // print("---------------------------------------------");
-      // var data = e;
+      isPassed = false;
 
       Get.snackbar(
         "${e.runtimeType}",
-        "Failed to authenticate device please check your credentials.2",
+        "Failed to authenticate device please check your credentials.",
         icon: const Icon(Icons.error, color: Colors.red),
         snackPosition: SnackPosition.BOTTOM,
       );

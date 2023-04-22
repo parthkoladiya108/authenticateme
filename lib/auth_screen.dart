@@ -83,7 +83,8 @@ class _HomePageState extends State<HomePage> {
                                                 await Clipboard.setData(
                                                     ClipboardData(
                                                         text: authController
-                                                            .ipaddress));
+                                                            .ipaddress
+                                                            .trim()));
                                                 // copied successfully
                                               },
                                               child: const Icon(
