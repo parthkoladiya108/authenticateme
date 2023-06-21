@@ -2,8 +2,10 @@
     package="com.example.authenticateme">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
-        android:label="authenticateme"
+        android:label="Odoo Secure Login App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

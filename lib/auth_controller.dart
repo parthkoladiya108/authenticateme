@@ -4,15 +4,18 @@ import 'package:get/get.dart';
 import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 
+import 'app_constant/string.dart';
+
 class AuthController extends GetxController {
   bool obscureText = true;
   bool isLoading = false;
   bool isPassed = false;
   String ipaddress = "";
   final formKey = GlobalKey<FormState>();
-  TextEditingController urlController = TextEditingController();
   TextEditingController userNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController dbNameController = TextEditingController();
+  TextEditingController dbUrlController = TextEditingController();
 
   Future<String?> getipAddress() async {
     try {
@@ -34,7 +37,7 @@ class AuthController extends GetxController {
     update();
     String? ipAddress = await getipAddress();
     if (ipAddress != null) {
-      authenticateUser(userUsername, userPassword, ipAddress);
+      authenticateUser(userUsername, userPassword, ipaddress);
     } else {
       print('error line 02');
       isLoading = false;
@@ -45,11 +48,9 @@ class AuthController extends GetxController {
   updateSettings(
       String userUsername, String userPassword, OdooClient client2) async {
     try {
-      final client = OdooClient("https://security-v15.odoo.com");
+      final client = OdooClient(dbUrlController.text);
       final user = await client.authenticate(
-          "planetodooofficial-security-v15-production-7947598",
-          userUsername,
-          userPassword);
+          dbNameController.text, userUsername, userPassword);
 
       final data2 = await client2.callKw({
         'model': 'res.users',
@@ -57,9 +58,8 @@ class AuthController extends GetxController {
         'args': [
           [user.userId],
           {
-            'x_studio_authenticated_via_security_app': true,
-            'x_studio_last_authenticated_datetime': DateTime.now().toString(),
-            'x_studio_last_updated_ip': ipaddress.trim()
+            appString.authenticatedViaSecurity: true.toString(),
+            appString.lastUpdatedIp: ipaddress.trim()
           }
         ],
         'kwargs': {
@@ -111,12 +111,10 @@ class AuthController extends GetxController {
   Future authenticateUser(
       String userUsername, String userPassword, String deviceMacAddress) async {
     try {
-      final client = OdooClient("https://security-v15.odoo.com");
+      final client = OdooClient(dbUrlController.text.trim());
 
-      final data = await client.authenticate(
-          "planetodooofficial-security-v15-production-7947598",
-          'admin',
-          'admin');
+      await client.authenticate(dbNameController.text.trim(),
+          appString.adminUserName, appString.adminPassword);
 
       final data2 = await client.callKw({
         'model': 'res.users',
@@ -129,9 +127,10 @@ class AuthController extends GetxController {
           ],
         },
       });
-      data2[0]['x_studio_mac_addresses'];
+
+      data2[0][appString.macAddress];
       List<String> xStudioMacAddress =
-          data2[0]['x_studio_mac_addresses'].toString().split(',');
+          data2[0][appString.macAddress].toString().split(',');
 
       if (xStudioMacAddress.contains(deviceMacAddress.trim())) {
         isLoading = false;
@@ -154,7 +153,7 @@ class AuthController extends GetxController {
       isPassed = false;
 
       Get.snackbar(
-        "${e.runtimeType}",
+        "Failed to authenticate",
         "Failed to authenticate device please check your credentials.",
         icon: const Icon(Icons.error, color: Colors.red),
         snackPosition: SnackPosition.BOTTOM,

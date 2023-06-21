@@ -21,6 +21,22 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topRight,
+                  end: Alignment.bottomLeft,
+                  colors: <Color>[
+                    Colors.blue,
+                    Colors.red.withOpacity(0.8),
+                    Colors.red
+                  ]),
+            ),
+          ),
+          title: const Text("Odoo Authentication via Secured Device"),
+        ),
         backgroundColor: Colors.white,
         body: GetBuilder<AuthController>(
             initState: (state) => Future.delayed(Duration.zero, () {
@@ -98,6 +114,68 @@ class _HomePageState extends State<HomePage> {
                                       const Padding(
                                         padding: EdgeInsets.only(
                                             left: 16.0, top: 16, bottom: 4),
+                                        child: Text('Database url',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            textAlign: TextAlign.start),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16.0, right: 16, bottom: 16),
+                                        child: StartUpTextFiled(
+                                          color: Colors.white,
+                                          fillColor: Colors.white,
+                                          headingTextColor: Colors.white,
+                                          controller:
+                                              authController.dbUrlController,
+                                          isShowBorder: true,
+                                          headingText: 'Database url',
+                                          hintText: "Database url",
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return 'Please enter your database url here';
+                                            }
+                                            return null;
+                                          },
+                                          textInputType:
+                                              TextInputType.emailAddress,
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                            left: 16.0, top: 16, bottom: 4),
+                                        child: Text('Database name',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            textAlign: TextAlign.start),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 16.0, right: 16, bottom: 16),
+                                        child: StartUpTextFiled(
+                                          color: Colors.white,
+                                          fillColor: Colors.white,
+                                          headingTextColor: Colors.white,
+                                          controller:
+                                              authController.dbNameController,
+                                          isShowBorder: true,
+                                          headingText: 'Database name',
+                                          hintText: "Database name",
+                                          validator: (value) {
+                                            if (value!.isEmpty) {
+                                              return 'Please enter your database name here';
+                                            }
+                                            return null;
+                                          },
+                                          textInputType:
+                                              TextInputType.emailAddress,
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                            left: 16.0, top: 16, bottom: 4),
                                         child: Text('User name',
                                             style: TextStyle(
                                               color: Colors.black,
@@ -143,7 +221,22 @@ class _HomePageState extends State<HomePage> {
                                           fillColor: Colors.white,
                                           controller:
                                               authController.passwordController,
-                                          obscureText: true,
+                                          obscureText:
+                                              authController.obscureText,
+                                          suffixIconWidget: authController
+                                                  .obscureText
+                                              ? const Icon(
+                                                  Icons.visibility_off_outlined,
+                                                  color: Colors.black)
+                                              : const Icon(
+                                                  Icons.visibility_outlined,
+                                                  color: Colors.black,
+                                                ),
+                                          suffixIconOnPress: () {
+                                            authController.obscureText =
+                                                !authController.obscureText;
+                                            authController.update();
+                                          },
                                           headingTextColor: Colors.white,
                                           isShowBorder: true,
                                           headingText: 'Password',
@@ -183,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                                                 );
                                               }
                                             },
-                                            child: const Text('check'),
+                                            child: const Text('Authenticate'),
                                           ),
                                         ],
                                       ),
